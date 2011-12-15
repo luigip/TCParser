@@ -1,0 +1,109 @@
+
+Problem Statement
+    
+You are placed in a maze represented by a rectangular board. Each cell of the board can be one of the following:
+empty: is always passable (represented by a '.')
+a wall: is never passable (a '#')
+a key: is always passable; when you enter it for the first time, you pick up the key (a lowercase letter 'a'-'f')
+a door: is passable only if you have a corresponding key (an uppercase letter 'A'-'F')
+your starting position: an empty cell where you are placed at the beginning (a '0' digit)
+exit point: an empty cell you must enter to get out of the maze (a '1' digit).
+You must get out of the maze using a minimal number of moves. In one move you can get to a cell which is adjacent to your current position vertically or horizontally. You will be given a String[] maze. Each character in maze will represent a single cell of the maze. A key denoted with a certain lowercase letter opens the door denoted with the corresponding uppercase letter only. Return the minimal number of moves that will bring you to an exit point. There can be several exit points, in which case you can get to any of them. If you can't get to any exit point, return -1.
+Definition
+    
+Class:
+LockedDoors
+Method:
+pathOutside
+Parameters:
+String[]
+Returns:
+int
+Method signature:
+int pathOutside(String[] maze)
+(be sure your method is public)
+    
+
+Notes
+-
+It is possible to have several keys or several doors of the same type on the map.
+-
+It is possible to have a door without the corresponding key, and vice versa.
+-
+Once you have picked up a key, you can use it multiple times.
+Constraints
+-
+maze will contain between 1 and 50 elements, inclusive.
+-
+Each element of maze will contain between 1 and 50 characters, inclusive.
+-
+All elements of maze will contain the same number of characters.
+-
+Each character in maze will be '.', '#', '0' (digit), '1' (digit), 'A'-'F' or 'a'-'f'.
+-
+There will be exactly one '0' character and at least one '1' character in maze.
+Examples
+0)
+
+    
+{"1..0",
+ "###.",
+ "1..."}
+Returns: 3
+There are no keys or doors in the maze.
+1)
+
+    
+{"..0..",
+ ".###.",
+ "..1.A"}
+Returns: 6
+We can get to the exit without opening the door.
+2)
+
+    
+{"f0.F..1"}
+Returns: 7
+
+3)
+
+    
+{"0....",
+ ".#B#A",
+ ".#.#.",
+ "b#a#1"}
+Returns: 19
+You have to get the 'b' key first, open the 'B' door, get the 'a' key and open the 'A' door to get to the exit.
+4)
+
+    
+{"c.0.C.C.C.1"}
+Returns: 12
+The 'c' key opens all 'C' doors.
+5)
+
+    
+{"###...",
+ "#0A.1a",
+ "###..."}
+Returns: -1
+
+6)
+
+    
+{"a#c#eF.1",
+ ".#.#.#..",
+ ".#B#D###",
+ "0....F.1",
+ "C#E#A###",
+ ".#.#.#..",
+ "d#f#bF.1"}
+Returns: 55
+You have to get all 6 keys in the correct order to open the 'F' door.
+7)
+
+    
+{"0abcdef.FEDCBA1"}
+Returns: 14
+You can carry several types of keys at once.
+This problem statement is the exclusive and proprietary property of TopCoder, Inc. Any unauthorized use or reproduction of this information without the prior written consent of TopCoder, Inc. is strictly prohibited. (c)2003, TopCoder, Inc. All rights reserved.

@@ -1,0 +1,12 @@
+Ideas / todo for TCParser
+-------------------------
+
+enable saving settings (settings menu)
+
+enable alternative to src/main/scala etc
+
+make parsing able to handle input from website
+  Delete whitespace after example numbers & other whitespace
+  Delete blank lines in examples
+  Insert CR after "Method:" etc
+

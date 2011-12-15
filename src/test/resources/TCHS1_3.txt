@@ -1,0 +1,81 @@
+
+Problem Statement
+    
+People enjoy mazes, but they also get them dirty. Arrows, graffiti, and chewing gum are just a few of the souvenirs people leave on the walls. You, the maze keeper, are assigned to whiten the maze walls. Each face of the wall requires one liter of paint, but you are only required to paint visible faces. You are given a map of the maze, and you must determine the amount of paint needed for the job.
+The maze is described by a String[] maze, where each character can be either '#' (a wall) or '.' (an empty space). All '.' characters on the perimeter of the map are considered entrances to the maze. Upon entering the maze, one can only move horizontally and vertically through empty spaces, and areas that are not reachable by these movements are not considered visible. Each '#' represents a square block with four wall faces (each side of the square is a face). A face is visible if it is not directly adjacent to another wall (and is in a reachable area of the maze). For example, two adjacent blocks can have at most six visible faces since two of their faces are directly adjacent to each other. All exterior faces on the perimeter are considered visible.
+For example, the following picture represents a trivial maze with just one (wide) entrance and only four empty reachable spaces:  
+ 
+To whiten this maze you must paint the faces highlighted in yellow above: 16 for its perimeter, plus 8 interior faces. Note that there are faces that are not visible and thus need not be painted.
+Definition
+    
+Class:
+TroytownKeeper
+Method:
+limeLiters
+Parameters:
+String[]
+Returns:
+int
+Method signature:
+int limeLiters(String[] maze)
+(be sure your method is public)
+    
+
+Constraints
+-
+maze will contain between 1 and 50 elements, inclusive.
+-
+Each element of maze will contain between 1 and 50 characters, inclusive.
+-
+All elements of maze will have the same number of characters.
+-
+All characters in maze will be either '.' or '#'.
+Examples
+0)
+
+    
+{"##..#"
+,"#.#.#"
+,"#.#.#"
+,"#####"}
+Returns: 24
+Example from the problem statement.
+1)
+
+    
+{"##",
+ "##"}
+Returns: 8
+Only the perimeter of the maze (which has no interior!) has to be painted.
+2)
+
+    
+{"######"
+,"#....."
+,"#.####"
+,"#.#..#"
+,"#.##.#"
+,"#....#"
+,"######"}
+Returns: 56
+
+3)
+
+    
+{"######"
+,"#....."
+,"#..#.."
+,"#....."
+,"######"}
+Returns: 36
+
+4)
+
+    
+{"#.#.#.#"
+,".#.#.#."
+,"#.#.#.#"
+,".#.#.#."}
+Returns: 36
+
+This problem statement is the exclusive and proprietary property of TopCoder, Inc. Any unauthorized use or reproduction of this information without the prior written consent of TopCoder, Inc. is strictly prohibited. (c)2003, TopCoder, Inc. All rights reserved.
