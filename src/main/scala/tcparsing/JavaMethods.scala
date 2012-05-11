@@ -1,6 +1,0 @@
-package tcparsing
-
-
-trait JavaMethods {
-  
-}

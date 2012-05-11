@@ -1,6 +1,8 @@
 Ideas / todo for TCParser
 -------------------------
 
+create src and test folders if these don't already exist
+
 enable saving settings (settings menu)
 
 enable alternative to src/main/scala etc
@@ -10,3 +12,4 @@ make parsing able to handle input from website
   Delete blank lines in examples
   Insert CR after "Method:" etc
 
+make first installation easier
