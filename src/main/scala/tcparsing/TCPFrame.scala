@@ -194,7 +194,9 @@ class TCPFrame extends javax.swing.JFrame {
     val to = Option(Toolkit.getDefaultToolkit.getSystemClipboard.getContents(null))
     to match {
       case Some(t) if t.isDataFlavorSupported(DataFlavor.stringFlavor) => {
-        textAreaInput.setText(t.getTransferData(DataFlavor.stringFlavor).asInstanceOf[String])
+        val text = t.getTransferData(DataFlavor.stringFlavor).asInstanceOf[String]
+        // replace unicode characters that can cause SBT to crash
+        textAreaInput.setText(text.replace(160.toChar, ' '))
         textAreaInput.setCaretPosition(0)
       }
       case None => 
