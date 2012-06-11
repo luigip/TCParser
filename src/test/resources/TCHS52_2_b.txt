@@ -1,0 +1,54 @@
+
+Problem Statement
+    
+When multiple tasks are executed on a single CPU, they are not truly run in parallel. Instead, the CPU spends some time on each task in turn, and a scheduler is used to decide which task to run at any given time. Real-world schedulers are quite complex and must try to balance conflicting priorities.
+For the purposes of this problem, we will consider only a simple "round-robin" scheduler. There are N tasks, numbered 0 to N-1. The scheduler runs each task in turn for one second, starting with task 0 and proceeding with tasks 1, 2, ..., N-1, before starting again at 0. Once a task completes executing, the scheduler will skip over that task in the future.
+Element i of tasks is the number of seconds of execution time required by task i. Return a int[] containing exactly N integers, where the i-th element is the total time the system has been running when task i completes.
+Definition
+    
+Class:
+RRSchedule
+Method:
+terminalTimes
+Parameters:
+long[]
+Returns:
+long[]
+Method signature:
+long[] terminalTimes(long[] tasks)
+(be sure your method is public)
+    
+
+Constraints
+-
+tasks will contain between 1 and 50 elements, inclusive.
+-
+Each element of tasks will be between 1 and 20,000,000, inclusive.
+Examples
+0)
+
+    
+{1234567890, 1, 1234567890123, 4}
+Returns: {5, 2, 6, 9 }
+For the first four seconds, each task gets one turn, and the 2nd task completes after 2 seconds. The next two seconds complete the first and third tasks, and three more seconds are required to complete the fourth task.
+1)
+
+    
+{1, 2, 3}
+Returns: {1, 4, 1234567899990 }
+
+2)
+
+    
+{3, 2, 2, 1}
+Returns: {8, 6, 7, 4 }
+
+3)
+
+    
+{2, 4, 7, 7, 3, 2, 9, 10, 5, 8, 10, 1, 5, 7, 6, 8, 10, 4, 9, 7, 10, 4, 3, 9}
+Returns: 
+{25, 69, 118, 119, 51, 30, 140, 147, 92, 133, 148, 12, 95, 124, 111, 135,
+ 149, 82, 144, 128, 150, 86, 67, 146 }
+
+This problem statement is the exclusive and proprietary property of TopCoder, Inc. Any unauthorized use or reproduction of this information without the prior written consent of TopCoder, Inc. is strictly prohibited. (c)2003, TopCoder, Inc. All rights reserved.

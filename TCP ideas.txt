@@ -1,4 +1,4 @@
-Ideas / todo for TCParser
+Ideas / to do for TCParser
 -------------------------
 
 create src and test folders if these don't already exist

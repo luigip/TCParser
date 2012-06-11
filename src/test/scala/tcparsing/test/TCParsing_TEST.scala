@@ -255,7 +255,72 @@ class TCHS1_3_TEST extends FunSuite with ShouldMatchers {
     ) should equal (36) }
 
 }"""
-    p.composeTests should equal (exp); p === 1
+    p.composeTests should equal (exp)
   }
 
+
+  test("52-2"){
+    val p = TCParser.fromFile("TCHS52_2")
+    val exp = """package topcoder.test
+                |
+                |import org.scalatest.FunSuite
+                |import org.scalatest.matchers.ShouldMatchers
+                |import topcoder.TCHS52_2.terminalTimes
+                |
+                |class TCHS52_2_TEST extends FunSuite with ShouldMatchers {
+                |
+                |  test("Case 0") { terminalTimes(
+                |    Array(2, 1, 2, 4)
+                |    ) should equal (Array(5, 2, 6, 9 )) }
+                |
+                |  test("Case 1") { terminalTimes(
+                |    Array(1, 2, 3)
+                |    ) should equal (Array(1, 4, 6 )) }
+                |
+                |  test("Case 2") { terminalTimes(
+                |    Array(3, 2, 2, 1)
+                |    ) should equal (Array(8, 6, 7, 4 )) }
+                |
+                |  test("Case 3") { terminalTimes(
+                |    Array(2, 4, 7, 7, 3, 2, 9, 10, 5, 8, 10, 1, 5, 7, 6, 8, 10, 4, 9, 7, 10, 4, 3, 9)
+                |    ) should equal (
+                |    Array(25, 69, 118, 119, 51, 30, 140, 147, 92, 133, 148, 12, 95, 124, 111, 135,
+                |          149, 82, 144, 128, 150, 86, 67, 146 )) }
+                |
+                |}""".stripMargin
+    p.composeTests should equal (exp)
+  }
+
+  // Test addition of 'L' to Long return arg and types
+  test("52-2-b"){
+    val p = TCParser.fromFile("TCHS52_2_b")
+    val exp = """package topcoder.test
+                |
+                |import org.scalatest.FunSuite
+                |import org.scalatest.matchers.ShouldMatchers
+                |import topcoder.TCHS52_2_b.terminalTimes
+                |
+                |class TCHS52_2_b_TEST extends FunSuite with ShouldMatchers {
+                |
+                |  test("Case 0") { terminalTimes(
+                |    Array(1234567890L, 1, 1234567890123L, 4)
+                |    ) should equal (Array(5, 2, 6, 9 )) }
+                |
+                |  test("Case 1") { terminalTimes(
+                |    Array(1, 2, 3)
+                |    ) should equal (Array(1, 4, 1234567899990L )) }
+                |
+                |  test("Case 2") { terminalTimes(
+                |    Array(3, 2, 2, 1)
+                |    ) should equal (Array(8, 6, 7, 4 )) }
+                |
+                |  test("Case 3") { terminalTimes(
+                |    Array(2, 4, 7, 7, 3, 2, 9, 10, 5, 8, 10, 1, 5, 7, 6, 8, 10, 4, 9, 7, 10, 4, 3, 9)
+                |    ) should equal (
+                |    Array(25, 69, 118, 119, 51, 30, 140, 147, 92, 133, 148, 12, 95, 124, 111, 135,
+                |          149, 82, 144, 128, 150, 86, 67, 146 )) }
+                |
+                |}""".stripMargin
+    p.composeTests should equal (exp)
+  }
 }

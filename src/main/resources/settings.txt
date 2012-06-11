@@ -1,18 +1,20 @@
-projectName: 		         topcoder
+//Example settings file. Edit this in your home/TCParser directory
 
-codePackageNameJava: 	   topcoder.code.java
+projectName: 		     topcoder
+
+codePackageNameJava: 	 topcoder.code.java
 codePackageNameScala:    topcoder.code.scala
 
-testPackageNameJava: 	   topcoder.test.java
+testPackageNameJava: 	 topcoder.test.java
 testPackageNameScala:    topcoder.test.scala
 
-projectsRoot: 		       C:/Users/Rhys/Documents/Java/SbtProjects/
+projectsRoot: 		     C:/Users/Rhys/Documents/Java/SbtProjects/
 
 testClassPrefix: 	
 
 testClassPostfix: 	     _TEST
 
-problemName: 		         TCHS0_1
+problemName: 		     TCHS0_1
 
 includeReturnType:       false
 

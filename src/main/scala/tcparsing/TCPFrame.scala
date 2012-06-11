@@ -15,9 +15,9 @@ object TCPFrame {
     new TCPFrame().setVisible(true)
   }
 }
-/**
- * The TopCoder Parser user interface
- */
+/**************************************
+ * The TopCoder Parser user interface *
+ **************************************/
 class TCPFrame extends javax.swing.JFrame {
   
   /* UI elements */
@@ -93,10 +93,10 @@ class TCPFrame extends javax.swing.JFrame {
        .filter(_.size == 2)                 // only use lines which were split
        .map(i => i(0).trim -> i(1).trim)    // turn each Array into a Tuple
        .toMap
-    
+
     s += "codePackageName" -> s("codePackageName" + s("language").capitalize)
-    s += "testPackageName" -> s("testPackageName" + s("language").capitalize)
-    s += getCodePath(s)
+    s += "testPackageName" -> s("testPackageName" + s("language").capitalize)   
+    s += getCodePath(s)    
     s += getTestPath(s)
     if (!s.contains("includeProblemStatement")) s += "includeProblemStatement" -> "false"
     s
@@ -127,6 +127,7 @@ class TCPFrame extends javax.swing.JFrame {
                                   settings("includeProblemStatement") == "true"
                    ))
     updateOutput()
+    textAreaOutput.setCaretPosition(0)
   }
   
   /* Generic utility method to attempt to retrieve a value; if it fails it goes to None 
@@ -194,6 +195,7 @@ class TCPFrame extends javax.swing.JFrame {
     to match {
       case Some(t) if t.isDataFlavorSupported(DataFlavor.stringFlavor) => {
         textAreaInput.setText(t.getTransferData(DataFlavor.stringFlavor).asInstanceOf[String])
+        textAreaInput.setCaretPosition(0)
       }
       case None => 
     }    
@@ -250,7 +252,8 @@ class TCPFrame extends javax.swing.JFrame {
 
     List(textAreaInput, textAreaOutput) foreach { ta =>
       // Stop scrolling when text inserted
-      ta.getCaret.asInstanceOf[DefaultCaret].setUpdatePolicy(DefaultCaret.NEVER_UPDATE) 
+      //ta.getCaret.asInstanceOf[DefaultCaret].setUpdatePolicy(DefaultCaret.NEVER_UPDATE) 
+      //Set font
       ta.setFont(textAreaFont)
     }
     
