@@ -31,4 +31,4 @@ I currently use this with IntelliJ IDEA, with the sbt plugin. The project tree o
 
 The parser has been extremely reliable so far and I have not come across any examples that do not work.
 
-This has not been tested on *nix systems, although it should work.
+This has not been tested on *nix or Apple systems, although it should work. (Actually, it will probably have problems with newline characters, since I noticed I hard-coded Windows-style \r\n in the TCParser class. I'll fix this when I get the chance; in the meantime, feel free to fix it yourself and send me a pull request!)
