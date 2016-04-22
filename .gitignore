@@ -1,5 +1,9 @@
 .svn
 .idea*
+out
 project
 target
+*.swp
+
+
 TCP ideas.txt

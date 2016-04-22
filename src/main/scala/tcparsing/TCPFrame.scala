@@ -4,7 +4,7 @@ import javax.swing._
 import event.{DocumentEvent, DocumentListener}
 import text.DefaultCaret
 import collection.immutable.Map
-import swing.Dialog
+import scala.swing.Dialog
 import java.io._
 import java.awt.event._
 import java.awt.datatransfer.{StringSelection, DataFlavor}
@@ -27,7 +27,7 @@ class TCPFrame extends javax.swing.JFrame {
   private val buttonSaveTest = new JButton
   private val buttonToggle = new JButton
   private val checkBoxReturnType = new JCheckBox
-  private val comboBoxLanguage = new JComboBox // needs [Object] for Java 7
+  private val comboBoxLanguage = new JComboBox[Object] // needs [Object] for Java 7
   private val labelCodePath = new JLabel
   private val labelInput = new JLabel
   private val labelOutput = new JLabel
@@ -50,32 +50,7 @@ class TCPFrame extends javax.swing.JFrame {
   var toggleState = 0
   /** Indication of whether the Problem Name has been updated by the user */
   var textFieldProblemIsDirty = false
-
-//  /**
-//   * Settings enumeration
-//   */
-//  abstract class Setting[T](nameInSettingsFile: String, var value: T) {  
-//    override def toString = value.toString
-//  }
-//  case object projectName       extends Setting("projectName", "")
-//  case object codePackageName   extends Setting("codePackageName", "")
-//  case object testPackageName   extends Setting("testPackageName", "")
-//  case object projectsRoot      extends Setting("projectsRoot", "")
-//  case object testClassPrefix   extends Setting("testClassPrefix", "")
-//  case object testClassPostfix  extends Setting("testClassPostfix", "")
-//  case object problemName       extends Setting("problemName", "")
-//  case object includeReturnType extends Setting("includeReturnType", false)
-  
-//  // Settings
-//  var projectName = ""
-//  var codePackageName = ""
-//  var testPackageName = ""
-//  var projectsRoot = ""
-//  var testClassPrefix = ""
-//  var testClassPostfix = ""
-//  var problemName = ""
-//  var includeReturnType = false  
-  
+ 
   /** Initialize GUI components - method automatically created in NetBeans */
   initComponents()
   

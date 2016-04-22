@@ -8,12 +8,14 @@ codePackageNameScala:    topcoder.code.scala
 testPackageNameJava: 	 topcoder.test.java
 testPackageNameScala:    topcoder.test.scala
 
+// The following settings are for auto-populating the Code and Test output paths
 projectsRoot: 		     C:/Users/Rhys/Documents/Java/SbtProjects/
 
 testClassPrefix: 	
 
 testClassPostfix: 	     _TEST
 
+// The following settings are defaults for the GUI
 problemName: 		     TCHS0_1
 
 includeReturnType:       false
