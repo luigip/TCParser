@@ -4,7 +4,7 @@ package tcp;
   This file is not used.
   It was cut-and-pasted from NetBeans GUI Builder, and translated into Scala by IntelliJ
 */
-
+/*
 public class TCPFrame extends javax.swing.JFrame {
 
     public TCPFrame() {
@@ -195,3 +195,4 @@ public class TCPFrame extends javax.swing.JFrame {
     private javax.swing.JTextField textFieldTestPath;
     // End of variables declaration
 }
+*/
