@@ -1,8 +1,7 @@
 .svn
 .idea*
 out
-project
-target
+target/
 *.swp
 
 
