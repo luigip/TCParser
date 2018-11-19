@@ -13,3 +13,5 @@ make parsing able to handle input from website
   Insert CR after "Method:" etc
 
 make first installation easier
+
+upload skeleton project, with build.sbt

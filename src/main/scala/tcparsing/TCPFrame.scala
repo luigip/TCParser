@@ -65,7 +65,7 @@ class TCPFrame extends javax.swing.JFrame {
     var s = io.Source.fromFile( settingsFile ).getLines()
        .filter(! _.matches("""\s*//.*"""))  // filter out comment lines
        .map(_.split(":", 2))                // split on first colon only
-       .filter(_.size == 2)                 // only use lines which were split
+       .filter(_.length == 2)                 // only use lines which were split
        .map(i => i(0).trim -> i(1).trim)    // turn each Array into a Tuple
        .toMap
 
@@ -77,10 +77,10 @@ class TCPFrame extends javax.swing.JFrame {
     s
   }
   
-  def getCodePath(s: Map[String, String]) = ("codePath" -> (s("projectsRoot") + s("projectName") + """/src/main/""" + s("language")  
-          + "/" + s("codePackageName").replace(".","/") + "/"))
-  def getTestPath(s: Map[String, String]) = ("testPath" -> (s("projectsRoot") + s("projectName") + """/src/test/""" + "scala"  // test files are in Scala
-          + "/" + s("testPackageName").replace(".","/") + "/"))
+  def getCodePath(s: Map[String, String]) = "codePath" -> (s("projectsRoot") + s("projectName") + """/src/main/""" + s("language")
+          + "/" + s("codePackageName").replace(".","/") + "/")
+  def getTestPath(s: Map[String, String]) = "testPath" -> (s("projectsRoot") + s("projectName") + """/src/test/""" + "scala"  // test files are in Scala
+          + "/" + s("testPackageName").replace(".","/") + "/")
   
   /** Copy a file from this Jar or directory to a local File */
   def copyFile(srcName: String, dest: File) {
@@ -179,7 +179,7 @@ class TCPFrame extends javax.swing.JFrame {
   }
   
   /** Test command to be copied to clipboard for use in SBT */
-  def sbtTestString = "~test-only " + settings("testPackageName")+ "." + settings("testClassPrefix") + 
+  def sbtTestString = "~testOnly " + settings("testPackageName")+ "." + settings("testClassPrefix") +
         settings("problemName") + settings("testClassPostfix")
 
   /**

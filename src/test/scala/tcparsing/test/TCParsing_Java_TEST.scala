@@ -9,29 +9,6 @@ class TCParsing_Java_TEST extends FunSuite with ShouldMatchers {
 
   test("519_2_1"){
     val p = TCParser.fromFile("SRM519_2_1", codePackageName = "topcoder.java", language = "java")
-
- // etc...
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     val exp = """package topcoder.test
 
 import org.scalatest.FunSuite

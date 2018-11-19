@@ -11,21 +11,32 @@ class TCParser(input                   : List[String],
                language                : String        = "scala",
                includeProblemStatement : Boolean       = false
               ) {
+  // Pairs up input lines, for easy searching on heading -> value in next line
   private val pairs = input.sliding(2).toList
+  // Utility method to return the String value of the line following the heading passed
   private def getVal(s: String) = pairs.find(_.head == s).get(1)
+
+  // The metadata of the problem class retrieved from the input (should perhaps have this as a separate class?)
   val method = getVal("Method:")
+  // The parameter types and names
   val (argTypes, argNames) = {
+    // Splits on ", " or " " or "(" or ")", drops the type and method name, groups the param type and name, and extracts lists of param types and names
     val List(t, n) = getVal("Method signature:").split(", |[ ()]").drop(2).grouped(2).toList.transpose
     (t map translateType, n)
   }
   val returnType = translateType(getVal("Returns:"))
+  // The examples section, dropping the title and the last line (copyright message)
   private val xs = input.dropWhile(_!="Examples").drop(1).dropRight(1)
+  // Split the examples where line is a number followed by ")"
   val examples = groupPrefix(xs)(_ matches """\d+\)""")
+  // Finds a tolerance, if there is one
   val tolerance = """\d[Ee]-\d""".r findFirstIn input.mkString
+  // If we're using Java, we need to create an instance "I" in our test script. Can't use a static method, because this is what TopCoder expects.
+  // (Might be better to change this to put an "import <instance>.methodName" in the script?)
+  // However in Scala we put our code in an object, so we just import the method and don't need an instance
   val instance = if (language == "java") "I." else ""
-  /*
-    Utility method used to split examples, preserving first line
-   */
+
+  //  Utility method used to split examples, preserving first line (not considering it a separator) - otherwise like split
   private def groupPrefix[T](xs: List[T])(p: T => Boolean): List[List[T]] = xs match {
    case List() => List()
    case x :: xs1 =>
@@ -33,8 +44,8 @@ class TCParser(input                   : List[String],
      (x :: ys) :: groupPrefix(zs)(p)
   }
   
-  // parseArray method converts String with Java-style {...} into Scala-style Array(...)
-  implicit def strTo(s: String) = new {
+  // Add method to String to convert Java-style {...} into Scala-style Array(...)
+  implicit class strTo(s: String) {
     def withScalaArrays = s.replaceAll("\\{", "Array\\(").replaceAll("}", ")")
   }
   
@@ -57,7 +68,7 @@ class TCParser(input                   : List[String],
     lb ++= {
       for {
         x <- examples
-        n = x(0).init.toInt
+        n = x.head.init.toInt
         args = parseArgs(x)
         result = parseResults(x)
         optnl = if(args.contains("Array(")) "\r\n    " else ""
@@ -165,6 +176,7 @@ class TCParser(input                   : List[String],
     lb.mkString("\r\n")    
   }
 
+  // Recursively get the Scala version of Array notation, and translate int to Int etc.
   def translateType(s: String): String = {
     if (s.endsWith("[]")) "Array[" + translateType(s.dropRight(2)) + "]"
     else s.capitalize

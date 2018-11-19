@@ -1,22 +1,26 @@
 //Example settings file. Edit this in your home/TCParser directory
 
-projectName: 		     topcoder
+projectName:             topcoderComps
 
-codePackageNameJava: 	 topcoder.code.java
+// You may want to separate Java and Scala solutions into separate packages, so that problems can be solved
+// in both languages without any class name clash
+codePackageNameJava:     topcoder.main.java
 codePackageNameScala:    topcoder.code.scala
 
-testPackageNameJava: 	 topcoder.test.java
+// If you wish to give the test classes the same names as the classes themselves, or if you just want to keep your
+// tests in a separate package from your sources, specify different package names here:
+testPackageNameJava:     topcoder.test.java
 testPackageNameScala:    topcoder.test.scala
 
 // The following settings are for auto-populating the Code and Test output paths
-projectsRoot: 		     C:/Users/Rhys/Documents/Java/SbtProjects/
+projectsRoot: 		     C:/Users/rjone/IdeaProjects/
 
-testClassPrefix: 	
+testClassPrefix:
 
-testClassPostfix: 	     _TEST
+testClassPostfix:        _TEST
 
 // The following settings are defaults for the GUI
-problemName: 		     TCHS0_1
+problemName:             TCHS0_1
 
 includeReturnType:       false
 
