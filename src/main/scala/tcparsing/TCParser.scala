@@ -4,7 +4,7 @@ import collection.mutable.ListBuffer
 import java.io.{PrintWriter, File}
 
 // Idea: use a Settings class instead of using hardcoded default values
-class TCParser(val input                   : List[String],
+class TCParser(input                   : List[String],
                inputName               : String, 
                testPackageName         : String, 
                codePackageName         : String, 
@@ -14,9 +14,12 @@ class TCParser(val input                   : List[String],
                testClassPrefix         : String        = "",
                testClassPostfix        : String        = "_TEST"
               ) {
-  /*private*/ val inputNoBlankLines = input.filterNot{_.matches("""[\s]*""")}
+  /*private*/ val inputFiltered = input.filterNot{ line =>
+    line.matches("""[\s]*""") ||  // whitespace lines
+    line.matches("""^This problem statement is the exclusive and proprietary.*""")
+  }
   // Pairs up input lines, for easy searching on heading -> value in next line
-  private val pairs = inputNoBlankLines.sliding(2).toList
+  private val pairs = inputFiltered.sliding(2).toList
   // Utility method to return the String value of the line following the heading passed
   private def getVal(s: String) = pairs.find(_.head == s).get(1)
   private val lineEnd = "\r\n"
@@ -30,12 +33,12 @@ class TCParser(val input                   : List[String],
     (t map translateType, n)
   }
   val returnType = translateType(getVal("Returns:"))
-  // The examples section, dropping the title and the last line (copyright message)
-  private val xs = inputNoBlankLines.dropWhile(_!="Examples").drop(1).dropRight(1)
+  // The examples section, dropping the title "Examples"
+  private val xs = inputFiltered.dropWhile(_!="Examples").drop(1)
   // Split the examples where line is a number followed by ")"
   val examples = groupPrefix(xs)(_ matches """\d+\)""")
   // Finds a tolerance, if there is one
-  val tolerance = """\d[Ee]-\d""".r findFirstIn inputNoBlankLines.mkString
+  val tolerance = """\d[Ee]-\d""".r findFirstIn inputFiltered.mkString
   // If we're using Java, we need to create an instance "I" in our test script. Can't use a static method, because this is what TopCoder expects.
   // (Might be better to change this to put an "import <instance>.methodName" in the script?)
   // However in Scala we put our code in an object, so we just import the method and don't need an instance
@@ -142,13 +145,13 @@ class TCParser(val input                   : List[String],
   def composeCodeTemplateScala = {
     val lb = new ListBuffer[String]
     val returnTypeString = if (useReturnType) ": " + returnType else ""
-
-    lb += "package " + codePackageName
+    val paramList = method + (argNames, argTypes).zipped.map(_ + ": " + _).mkString("(", ", ", ")")
+    lb += s"package $codePackageName"
     lb += ""
-    lb += "object " + inputName + " {"
-    lb += "  def " + method + ((argNames, argTypes).zipped.map(_ + ": " + _).
-          mkString("(", ", ", ")")) + returnTypeString + " = {"
+    lb += s"object $inputName {"
+    lb += s"  def $paramList$returnTypeString = {"
     lb += "    "
+    lb += "    ???"
     lb += "  }"
     lb += "}"
     if (includeProblemStatement) {
@@ -158,18 +161,18 @@ class TCParser(val input                   : List[String],
       lb += "*/"
     }
     
-    lb.mkString("\r\n")
+    lb.mkString(lineEnd)
   }
   
   def composeCodeTemplateJava = {
     val lb = new ListBuffer[String]
 
-    lb += "package " + codePackageName + ";"
+    lb += s"package $codePackageName;"
     lb += ""
-    lb += "public class " + inputName + " {"
+    lb += s"public class $inputName {"
     lb += "    public " + getVal("Method signature:") + " {"
     lb += "        "
-//    lb += "        return ;"
+    lb += "        return null;"
     lb += "    }"
     lb += "}"
     if (includeProblemStatement) {

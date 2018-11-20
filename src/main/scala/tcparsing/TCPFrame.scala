@@ -3,12 +3,14 @@ package tcparsing
 import javax.swing._
 import event.{DocumentEvent, DocumentListener}
 import text.DefaultCaret
+
 import collection.immutable.Map
 import scala.swing.Dialog
 import java.io._
 import java.awt.event._
-import java.awt.datatransfer.{StringSelection, DataFlavor}
-import java.awt.{GraphicsEnvironment, Toolkit, Font}
+import java.awt.datatransfer.{DataFlavor, StringSelection}
+import java.awt.{Font, GraphicsEnvironment, Toolkit}
+import java.util.Properties
 
 object TCPFrame {
   def main(args: Array[String]) {
@@ -54,14 +56,53 @@ class TCPFrame extends javax.swing.JFrame {
   /** Initialize GUI components - method automatically created in NetBeans */
   initComponents()
   
-  /** Return initial settings from text file */
+  /** Return initial settings from text file
+    * You can have more than one project location to which test scripts and code are written
+    * A file activeProject.properties is placed in the user home directory under /.TCParser, which gives the current
+    *   project settings
+    * In this location should be the settings.txt file (which we create if it's not there already
+    *
+    * */
   def loadSettings: Map[String, String] = {
-    val settingsDir = System.getProperty("user.home") + "/.TCParser"
-    val settingsFile = new File(settingsDir + "/settings.txt")
-    if ( ! settingsFile.exists) {
-      new File(settingsDir).mkdir()
-      copyFile("/settings.txt", settingsFile)
+    val homeDir = System.getProperty("user.home") + "/.TCParser"
+    val activeProject = new File(homeDir + "/activeProject.properties")
+    val defaultSettingsFileName = "/settings.default.txt"
+    val defaultSettingsFile = new File(homeDir + defaultSettingsFileName)
+
+//    val settingsFile = new File(settingsDir + "/settings.txt")
+    if ( ! activeProject.exists) {
+      new File(homeDir).mkdir()
+      try {
+        val props = new Properties
+        props.setProperty("active_project_settings_filename", "settings.default.txt")
+        val fileOut = new FileOutputStream(activeProject)
+        props.store(fileOut, "Active project settings file - so that you can have multiple output locations with different settings. File should be located in the same directory. Edit the value below in a text editor.")
+        fileOut.close()
+      }
+      catch { case e: Exception => e.printStackTrace() }
     }
+
+    val settingsFile = try {
+      val fi = new FileInputStream(activeProject)
+      val props = new Properties
+      props.load(fi)
+      fi.close()
+      val filename = props.getProperty("active_project_settings_filename")
+      val file = new File(homeDir +"/"+ filename)
+      if(file.exists) file else throw new IOException("Could not find active project settings file: " + activeProject)
+    } catch { case e: Exception =>
+      copyFile("/settings.default.txt", defaultSettingsFile)
+      println("Created ~/.TCParser/settings.default.txt")
+      Dialog.showMessage(title = "First time?", message =
+        """A default settings file has been copied to ~/.TCParser/
+          |Before proceeding, you must edit this to contain the project name and projects root folder where you are writing your code.
+          |(If you don't have a project folder, now's the time to set one up!)
+          |Application will exit - reopen it when done.
+          |""".stripMargin)
+      System.exit(0)
+      throw new RuntimeException("This should never happen, but the type checker needs to be kept happy")
+    }
+
     var s = io.Source.fromFile( settingsFile ).getLines()
        .filter(! _.matches("""\s*//.*"""))  // filter out comment lines
        .map(_.split(":", 2))                // split on first colon only
@@ -77,10 +118,16 @@ class TCPFrame extends javax.swing.JFrame {
     s
   }
   
-  def getCodePath(s: Map[String, String]) = "codePath" -> (s("projectsRoot") + s("projectName") + """/src/main/""" + s("language")
-          + "/" + s("codePackageName").replace(".","/") + "/")
-  def getTestPath(s: Map[String, String]) = "testPath" -> (s("projectsRoot") + s("projectName") + """/src/test/""" + "scala"  // test files are in Scala
-          + "/" + s("testPackageName").replace(".","/") + "/")
+  def getCodePath(s: Map[String, String]) = "codePath" -> (
+    if(s("simpleFileLocations") == "true")
+          s("projectsRoot") + s("projectName") + "/sources/"
+    else (s("projectsRoot") + s("projectName") + """/src/main/""" + s("language")
+          + "/" + s("codePackageName").replace(".","/") + "/"))
+  def getTestPath(s: Map[String, String]) = "testPath" -> (
+    if(s("simpleFileLocations") == "true")
+          s("projectsRoot") + s("projectName") + "/tests/"
+    else (s("projectsRoot") + s("projectName") + """/src/test/""" + "scala"  // test files are in Scala
+          + "/" + s("testPackageName").replace(".","/") + "/"))
   
   /** Copy a file from this Jar or directory to a local File */
   def copyFile(srcName: String, dest: File) {
@@ -111,7 +158,7 @@ class TCPFrame extends javax.swing.JFrame {
    * Could be replaced by scala.util.control.Exception.allCatch#opt */
   def trycatch[A](f: => A): Option[A] = {
     try { Some(f) }
-    catch { case _ => None }
+    catch { case e: Exception => e.printStackTrace(); None }
   }
 
   /** 
@@ -120,19 +167,18 @@ class TCPFrame extends javax.swing.JFrame {
    * */
   def save(filename: String, f:(TCParser, File) => Unit) {
     tcp match {
-      case Some(p) => {
+      case Some(p) =>
         val file = new File(filename)
-        if (! file.exists || 
-          Dialog.showOptions (message = "File already exists: Overwrite?", 
+        if (! file.exists ||
+          Dialog.showOptions (message = "File already exists: Overwrite?",
                               entries = Seq("Do it", "No thx"), initial = 1,
                               messageType = Dialog.Message.Warning) ==  Dialog.Result.Yes)  {
-          try f(p, file) 
-          catch { case e => 
+          try f(p, file)
+          catch { case e: Throwable =>
             Dialog.showMessage(message = "Could not save file. Check the file path is valid.",
                                messageType = Dialog.Message.Warning)
           }
         }
-      }
       case None => textAreaOutput.setText("Cannot save: no valid results available")
     }
   }
@@ -170,12 +216,11 @@ class TCPFrame extends javax.swing.JFrame {
   def pasteDataToInput() {
     val to = Option(Toolkit.getDefaultToolkit.getSystemClipboard.getContents(null))
     to match {
-      case Some(t) if t.isDataFlavorSupported(DataFlavor.stringFlavor) => {
+      case Some(t) if t.isDataFlavorSupported(DataFlavor.stringFlavor) =>
         val text = t.getTransferData(DataFlavor.stringFlavor).asInstanceOf[String]
         // replace unicode characters that can cause SBT to crash
         textAreaInput.setText(text.replace(160.toChar, ' '))
         textAreaInput.setCaretPosition(0)
-      }
       case None => 
     }    
   }
@@ -216,8 +261,8 @@ class TCPFrame extends javax.swing.JFrame {
     splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT)
     splitPane.setResizeWeight(0.5)
     
-    textAreaInput.setLineWrap(true);
-    textAreaInput.setWrapStyleWord(true);
+    textAreaInput.setLineWrap(true)
+    textAreaInput.setWrapStyleWord(true)
     textAreaInput.setText("Right-click to paste text...")
     textAreaInput.addMouseListener(new MouseAdapter(){
       override def mouseClicked(e: MouseEvent) {
@@ -327,8 +372,8 @@ class TCPFrame extends javax.swing.JFrame {
     val layout: GroupLayout = new GroupLayout(getContentPane)
 
     getContentPane.setLayout(layout)
-    layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup.addContainerGap.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING).addComponent(splitPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 776, Short.MaxValue).addComponent(labelInput, javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(labelCodePath).addComponent(labelTestPath)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(textFieldCodePath, javax.swing.GroupLayout.DEFAULT_SIZE, 629, Short.MaxValue).addComponent(textFieldTestPath, javax.swing.GroupLayout.DEFAULT_SIZE, 629, Short.MaxValue))).addGroup(layout.createSequentialGroup.addComponent(labelOutput, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(buttonToggle).addComponent(checkBoxReturnType)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false).addComponent(buttonClear, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MaxValue).addComponent(comboBoxLanguage, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MaxValue)).addGap(18, 18, 18).addComponent(labelProblem).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(textFieldProblem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MaxValue))).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false).addComponent(buttonParse, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MaxValue).addComponent(buttonSaveTest, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MaxValue).addComponent(buttonSaveCode, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MaxValue)))).addContainerGap))
-    layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup.addContainerGap.addComponent(labelInput).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 511, Short.MaxValue).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(buttonToggle).addComponent(buttonClear).addComponent(labelProblem).addComponent(labelOutput)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(checkBoxReturnType).addComponent(comboBoxLanguage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))).addComponent(buttonParse, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE).addComponent(textFieldProblem, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)).addGap(3, 3, 3).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(labelCodePath).addComponent(textFieldCodePath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addComponent(buttonSaveCode)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(labelTestPath).addComponent(textFieldTestPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addComponent(buttonSaveTest)).addContainerGap))
+    layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup.addContainerGap().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING).addComponent(splitPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 776, Short.MaxValue).addComponent(labelInput, javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(labelCodePath).addComponent(labelTestPath)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(textFieldCodePath, javax.swing.GroupLayout.DEFAULT_SIZE, 629, Short.MaxValue).addComponent(textFieldTestPath, javax.swing.GroupLayout.DEFAULT_SIZE, 629, Short.MaxValue))).addGroup(layout.createSequentialGroup.addComponent(labelOutput, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(buttonToggle).addComponent(checkBoxReturnType)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false).addComponent(buttonClear, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MaxValue).addComponent(comboBoxLanguage, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MaxValue)).addGap(18, 18, 18).addComponent(labelProblem).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(textFieldProblem, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MaxValue))).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false).addComponent(buttonParse, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MaxValue).addComponent(buttonSaveTest, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MaxValue).addComponent(buttonSaveCode, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MaxValue)))).addContainerGap()))
+    layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup.addContainerGap().addComponent(labelInput).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 511, Short.MaxValue).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(buttonToggle).addComponent(buttonClear).addComponent(labelProblem).addComponent(labelOutput)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(checkBoxReturnType).addComponent(comboBoxLanguage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))).addComponent(buttonParse, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE).addComponent(textFieldProblem, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)).addGap(3, 3, 3).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(labelCodePath).addComponent(textFieldCodePath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addComponent(buttonSaveCode)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(labelTestPath).addComponent(textFieldTestPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addComponent(buttonSaveTest)).addContainerGap()))
     pack()
   }
 

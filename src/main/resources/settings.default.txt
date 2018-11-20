@@ -2,15 +2,25 @@
 
 projectName:             topcoderComps
 
+// Package names: files need to be in some sort of package so that they can import each other
+
 // You may want to separate Java and Scala solutions into separate packages, so that problems can be solved
 // in both languages without any class name clash
 codePackageNameJava:     topcoder.main.java
 codePackageNameScala:    topcoder.code.scala
 
-// If you wish to give the test classes the same names as the classes themselves, or if you just want to keep your
-// tests in a separate package from your sources, specify different package names here:
+// If you wish to give the *test* classes the same names as the main ones, or if you just want to keep your
+// tests in a separate package from your sources, specify different package names here. Or just use the same as
+// above if you don't:
 testPackageNameJava:     topcoder.test.java
 testPackageNameScala:    topcoder.test.scala
+
+// Make this setting "true" if you wish to keep things simple and keep all your code in
+// <projectName>/sources, and tests in <projectName>/tests,
+// rather than <projectName>/src/main/scala/topcoder/code/java/ ... etc.
+// They will still get the package names specified above.
+// The output directories can still be manually edited in the GUI. These settings just set the defaults.
+simpleFileLocations:     true
 
 // The following settings are for auto-populating the Code and Test output paths
 projectsRoot: 		     C:/Users/rjone/IdeaProjects/
