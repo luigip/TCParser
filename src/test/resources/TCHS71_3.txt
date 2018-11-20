@@ -1,6 +1,6 @@
 
 Problem Statement
-    
+Â Â Â Â 
 You are placed in a maze represented by a rectangular board. Each cell of the board can be one of the following:
 empty: is always passable (represented by a '.')
 a wall: is never passable (a '#')
@@ -10,7 +10,7 @@ your starting position: an empty cell where you are placed at the beginning (a '
 exit point: an empty cell you must enter to get out of the maze (a '1' digit).
 You must get out of the maze using a minimal number of moves. In one move you can get to a cell which is adjacent to your current position vertically or horizontally. You will be given a String[] maze. Each character in maze will represent a single cell of the maze. A key denoted with a certain lowercase letter opens the door denoted with the corresponding uppercase letter only. Return the minimal number of moves that will bring you to an exit point. There can be several exit points, in which case you can get to any of them. If you can't get to any exit point, return -1.
 Definition
-    
+Â Â Â Â 
 Class:
 LockedDoors
 Method:
@@ -22,7 +22,7 @@ int
 Method signature:
 int pathOutside(String[] maze)
 (be sure your method is public)
-    
+Â Â Â Â 
 
 Notes
 -
@@ -45,7 +45,7 @@ There will be exactly one '0' character and at least one '1' character in maze.
 Examples
 0)
 
-    
+Â Â Â Â 
 {"1..0",
  "###.",
  "1..."}
@@ -53,7 +53,7 @@ Returns: 3
 There are no keys or doors in the maze.
 1)
 
-    
+Â Â Â Â 
 {"..0..",
  ".###.",
  "..1.A"}
@@ -61,13 +61,13 @@ Returns: 6
 We can get to the exit without opening the door.
 2)
 
-    
+Â Â Â Â 
 {"f0.F..1"}
 Returns: 7
 
 3)
 
-    
+Â Â Â Â 
 {"0....",
  ".#B#A",
  ".#.#.",
@@ -76,13 +76,13 @@ Returns: 19
 You have to get the 'b' key first, open the 'B' door, get the 'a' key and open the 'A' door to get to the exit.
 4)
 
-    
+Â Â Â Â 
 {"c.0.C.C.C.1"}
 Returns: 12
 The 'c' key opens all 'C' doors.
 5)
 
-    
+Â Â Â Â 
 {"###...",
  "#0A.1a",
  "###..."}
@@ -90,7 +90,7 @@ Returns: -1
 
 6)
 
-    
+Â Â Â Â 
 {"a#c#eF.1",
  ".#.#.#..",
  ".#B#D###",
@@ -102,7 +102,7 @@ Returns: 55
 You have to get all 6 keys in the correct order to open the 'F' door.
 7)
 
-    
+Â Â Â Â 
 {"0abcdef.FEDCBA1"}
 Returns: 14
 You can carry several types of keys at once.

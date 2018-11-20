@@ -1,9 +1,9 @@
 
 Problem Statement
-    
+Â Â Â Â 
 A DNA molecule is formed by two nucleotide chains of equal length. Each nucleotide in the first chain must form a bond with the nucleotide at the same position in the second chain. There are four types of nucleotides: A, C, G and T. Each type of nucleotide can only form a bond with one other type: A can only bond with T, and G can only bond with C. These pairs, AT and CG, are called complementary pairs. No other bonds are allowed. You are given a String nucleotides, where each character is an available nucleotide. Return the length of the longest DNA molecule that can be created using only the available nucleotides. The length of a DNA molecule is the number of nucleotides in either one of its chains. If no DNA molecule can be created, return 0.
 Definition
-    
+Â Â Â Â 
 Class:
 DNAConstruction
 Method:
@@ -15,7 +15,7 @@ int
 Method signature:
 int maxLength(String nucleotides)
 (be sure your method is public)
-    
+Â Â Â Â 
 
 Notes
 -
@@ -28,25 +28,25 @@ Each character in nucleotides will be 'A','C','G' or 'T'.
 Examples
 0)
 
-    
+Â Â Â Â 
 "AGGCA"
 Returns: 1
 The set of nucleotides contains only one complementary pair CG.
 1)
 
-    
+Â Â Â Â 
 "GGTACAGTTT"
 Returns: 3
 The set of nucleotides contains one CG pair and two AT pairs.
 2)
 
-    
+Â Â Â Â 
 "ACCACCAACCA"
 Returns: 0
 The set of nucleotides contains only A and C nucleotides, which aren't complementary.
 3)
 
-    
+Â Â Â Â 
 "AAAAAAAAAAAAAAAAACCCCCCCCGGGGGGGGTTTTTTTTTTTTTTTTT"
 Returns: 25
 

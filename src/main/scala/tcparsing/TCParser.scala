@@ -3,18 +3,23 @@ package tcparsing
 import collection.mutable.ListBuffer
 import java.io.{PrintWriter, File}
 
-class TCParser(input                   : List[String], 
+// Idea: use a Settings class instead of using hardcoded default values
+class TCParser(val input                   : List[String],
                inputName               : String, 
                testPackageName         : String, 
                codePackageName         : String, 
                useReturnType           : Boolean       = false,
                language                : String        = "scala",
-               includeProblemStatement : Boolean       = false
+               includeProblemStatement : Boolean       = false,
+               testClassPrefix         : String        = "",
+               testClassPostfix        : String        = "_TEST"
               ) {
+  /*private*/ val inputNoBlankLines = input.filterNot{_.matches("""[\s]*""")}
   // Pairs up input lines, for easy searching on heading -> value in next line
-  private val pairs = input.sliding(2).toList
+  private val pairs = inputNoBlankLines.sliding(2).toList
   // Utility method to return the String value of the line following the heading passed
   private def getVal(s: String) = pairs.find(_.head == s).get(1)
+  private val lineEnd = "\r\n"
 
   // The metadata of the problem class retrieved from the input (should perhaps have this as a separate class?)
   val method = getVal("Method:")
@@ -26,11 +31,11 @@ class TCParser(input                   : List[String],
   }
   val returnType = translateType(getVal("Returns:"))
   // The examples section, dropping the title and the last line (copyright message)
-  private val xs = input.dropWhile(_!="Examples").drop(1).dropRight(1)
+  private val xs = inputNoBlankLines.dropWhile(_!="Examples").drop(1).dropRight(1)
   // Split the examples where line is a number followed by ")"
   val examples = groupPrefix(xs)(_ matches """\d+\)""")
   // Finds a tolerance, if there is one
-  val tolerance = """\d[Ee]-\d""".r findFirstIn input.mkString
+  val tolerance = """\d[Ee]-\d""".r findFirstIn inputNoBlankLines.mkString
   // If we're using Java, we need to create an instance "I" in our test script. Can't use a static method, because this is what TopCoder expects.
   // (Might be better to change this to put an "import <instance>.methodName" in the script?)
   // However in Scala we put our code in an object, so we just import the method and don't need an instance
@@ -48,38 +53,39 @@ class TCParser(input                   : List[String],
   implicit class strTo(s: String) {
     def withScalaArrays = s.replaceAll("\\{", "Array\\(").replaceAll("}", ")")
   }
-  
+
+  def testCases = for {
+    x <- examples
+    n = x.head.init.toInt
+    args = parseArgs(x)
+    result = parseResults(x)
+    optionalNewLine = if(args.contains("Array(")) lineEnd + "    " else ""
+    (eqText, tolText) = if(tolerance.isEmpty) ("equal", "")
+    else ("be", " plusOrMinus " + tolerance.get)
+  } yield s"""  test(\"Case $n\") { $instance$method($args$optionalNewLine) should $eqText ($result$tolText) }$lineEnd"""
+
+  // Construct the test script
   def composeTests = {
     val lb = new ListBuffer[String]
-    val testClassName = inputName + "_TEST"
+    // The
+    val testClassName = testClassPrefix + inputName + testClassPostfix
 
     lb += "package " + testPackageName
     lb += ""
     lb += "import org.scalatest.FunSuite"
     lb += "import org.scalatest.matchers.ShouldMatchers"
-    lb += "import " + codePackageName + "." + inputName + (if(language == "scala") "." + method else "")
+    lb += s"import $codePackageName.$inputName${if(language == "scala") "." + method else ""}"
     lb += ""
-    lb += "class " + testClassName + " extends FunSuite with ShouldMatchers {"
+    lb += s"class $testClassName extends FunSuite with ShouldMatchers {"
     if (language == "java"){
       lb += ""
       lb += "  val I = new " + inputName
     }
     lb += ""
-    lb ++= {
-      for {
-        x <- examples
-        n = x.head.init.toInt
-        args = parseArgs(x)
-        result = parseResults(x)
-        optnl = if(args.contains("Array(")) "\r\n    " else ""
-        (eqText, tolText) = if(tolerance.isEmpty) ("equal", "") 
-                                             else ("be", " plusOrMinus " + tolerance.get)
-      } yield "  test(\"Case "+n+"\") { "+instance + method+"("+args + optnl+") should "+eqText+
-        " ("+result + tolText+") }\r\n"
-    }
+    lb ++= testCases
     lb += "}"
 
-    lb.mkString("\r\n")
+    lb.mkString(lineEnd)
   }
   // parse results after "Returns"
   def parseResults(x: List[String]) = {
@@ -92,16 +98,16 @@ class TCParser(input                   : List[String],
     // for cases where result is an Array displayed over multiple subsequent lines:
     else {
       val (a,b) = x.dropWhile(! _.startsWith("Returns: ")).drop(1).span(!_.endsWith("}"))
-      val arrres = "\r\n    " + (a :+ b.head).mkString("\r\n         ").withScalaArrays
-      if (returnType == "Array[Long]") longsAddL(arrres)
-      else arrres
+      val arrayResult = s"$lineEnd    ${(a :+ b.head).mkString(s"$lineEnd         ")}".withScalaArrays
+      if (returnType == "Array[Long]") longsAddL(arrayResult)
+      else arrayResult
     }
   }
   
-  // takes a single "example" as an arg
+  // reads a single "example" and returns the text to pass to method on test script
   def parseArgs(x: List[String]): String = {
     
-    val argLines = x.drop(3).takeWhile(!_.startsWith("Returns:")).map(_.withScalaArrays)
+    val argLines = x.drop(1).takeWhile(!_.startsWith("Returns:")).map(_.withScalaArrays)
 
     def join(y: List[String], argNumber: Int, acc: String = ""): String = {
       if (y == Nil) acc
@@ -181,10 +187,8 @@ class TCParser(input                   : List[String],
     if (s.endsWith("[]")) "Array[" + translateType(s.dropRight(2)) + "]"
     else s.capitalize
   }
-  
-  val LongLiteral = "[0-9]{10,}".r
-  
-  def longsAddL(s: String) = LongLiteral.replaceAllIn(s, _.matched + 'L')
+
+  def longsAddL(s: String) = "[0-9]{10,}".r.replaceAllIn(s, _.matched + 'L')
   
   def writeTestsFile(f: File) {
     val p = new PrintWriter(f)
@@ -207,7 +211,9 @@ object TCParser {
                codePackageName: String = "topcoder",
                language: String        = "scala"
               ): TCParser = {
-    val input = io.Source.fromFile(path + inputName + ".txt")(io.Codec("ISO-8859-1")).getLines().toList
+    // Load input and filter out hidden non-ASCII characters, as the TopCoder Java app has a tendency to insert them
+    val input = io.Source.fromFile(path + inputName + ".txt")(io.Codec("UTF-8")).getLines()
+      .map(_.replaceAll("""^[^\p{ASCII}]*$""", "")).toList
     new TCParser(input, inputName, testPackageName, codePackageName, false, language)
   }
 

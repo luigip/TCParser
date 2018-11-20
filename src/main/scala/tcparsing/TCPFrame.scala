@@ -99,7 +99,9 @@ class TCPFrame extends javax.swing.JFrame {
                                   settings("codePackageName"), 
                                   checkBoxReturnType.isSelected, 
                                   settings("language"),
-                                  settings("includeProblemStatement") == "true"
+                                  settings("includeProblemStatement") == "true",
+                                  settings("testClassPrefix"),
+                                  settings("testClassPostfix")
                    ))
     updateOutput()
     textAreaOutput.setCaretPosition(0)
