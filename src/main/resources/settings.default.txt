@@ -32,7 +32,7 @@ testClassPostfix:        _TEST
 // The following settings are defaults for the GUI
 problemName:             TCHS0_1
 
-includeReturnType:       false
+includeReturnType:       true
 
 language:                scala
 

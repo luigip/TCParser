@@ -3,6 +3,7 @@ name := "TCParser"
 version := "1.0"
 
 // We're using 2.10 because it's the latest that's compatible with Scalatest 1.x
+// Ideally would move to latest Scalatest, but the tests would require refactoring
 scalaVersion := "2.10.6"
 
 libraryDependencies ++= Seq(
